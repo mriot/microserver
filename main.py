@@ -10,8 +10,16 @@ server_two = MicroServer("Server Name 2", port=8081)  # NOTE: Different port
 server.add_route("/text", lambda: "Hello World!")
 server.add_route("/dict", lambda: {"hello": "world"})
 server.add_route("/tuple", lambda: ("Hello", "World!"))
+server.add_route("/list", lambda: ["Hello", "World!"])
 server.add_route("/bytes", lambda: b"Hello World!")
 server.add_route("/error", lambda: 1 / 0)
+server.add_route(
+    "/test",
+    lambda: {
+        "somekey": [b"testvalue", True],
+        "somedict": {"key": "value", "key2": False},
+    },
+)
 
 server_two.add_route("/text", lambda: "Hello World 2!")
 
