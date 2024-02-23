@@ -66,8 +66,6 @@ In most cases a simple `GET` request is enough to trigger a certain action on th
 
 All responses are in JSON.
 
-All non-serializable types are converted to strings.
-
 A successful response looks like this:
 
 ```json
