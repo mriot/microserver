@@ -27,18 +27,16 @@ class MicroServer:
         self.routes[path] = callback
 
     def _send(self, connection, data, status=200):
-        if type(data) in (dict, list, tuple):
-            data = json.dumps(data)
-        else:
-            data = json.dumps({"message": str(data)})
-
+        content = json.dumps(
+            {"data" if status == 200 else "error": data},
+            default=lambda obj: str(obj),
+        )
         connection.send(
-            f"HTTP/1.1 {status} {self.HTTP_STATUS[status]}\r\nContent-Type: application/json\r\n\r\n{data}".encode()
+            f"HTTP/1.1 {status} {self.HTTP_STATUS[status]}\r\nContent-Type: application/json\r\n\r\n{content}".encode()
         )
 
     def start(self):
         print(f"Server running on port {self.server_address[1]}...")
-
         while True:
             connection, client_address = self.sock.accept()
 
@@ -55,7 +53,7 @@ class MicroServer:
 
             except Exception as e:
                 print(f"Error: {e}")
-                self._send(connection, str(e), 500)
+                self._send(connection, e, 500)
 
             finally:
                 connection.close()
