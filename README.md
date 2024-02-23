@@ -1,25 +1,26 @@
 # Microserver
 
-A barebone python REST API server for microcontrollers running micropython.
-
-It provides a simple way to communicate with your microcontroller over the network to let it do things like turn on a light, read a sensor, etc.
-
-> The only dependencies are the python built-in 'json' and 'socket' modules. 
+A minimalistic, dependency-free Python REST API server designed for microcontrollers running MicroPython.  
+It offers a simple way to communicate with your microcontrollers over a network.
 
 ## Basics
 
-### Create a server and give it a name
+### Load the code onto your microcontroller
+
+The [microserver.py](/microserver.py) file is the only file you need to run the server.
+
+### Create a server and optionally give it a name
 
 ```python	
 from microserver import MicroServer
 
-server = MicroServer("Server Name")  # Default port is 8080
+server = MicroServer("LED")  # Default port is 8080
 ```
 ### Add routes
 
 ```python
-server.add_route("/hello", lambda: "Hello World!")
-server.add_route("/list", lambda: [1, 2, 3])
+server.add_route("/on", lambda: led.on())
+server.add_route("/off", lambda: led.off())
 ```
 
 ### Start the server
@@ -29,7 +30,7 @@ Blocking
 ```python
 server.start()
 ```
-Or non-blocking in a new thread
+Or non-blocking
 
 ```python
 import _thread
@@ -42,12 +43,11 @@ _thread.start_new_thread(server.start, ())
 
 ```json
 {
-    "name": "Server Name",
+    "name": "LED",
     "routes": [
         "/",
-        "/hello"
-        "/list",
-
+        "/on"
+        "/off",
     ]
 }
 ```
@@ -59,47 +59,45 @@ _thread.start_new_thread(server.start, ())
 By default the server does not actively do anything with the requests.  
 It just calls the function associated with the route and returns the response.
 
-In most cases a simple `GET` request is enough to trigger a certain action on the microcontroller.
+In most cases a simple `GET` request is all you need to trigger an action on the microcontroller.
 
 
 ## Responses
 
 All responses are in JSON.
 
-A successful response looks like this:
+A successful response has the following format:
 
 ```json
 {
     "data": "Any response data here"
 }
 
-// --- or more complex data ---
+// --- example ---
 
 {
     "data": {
-        "somekey": [
-            "b'testvalue'", // bytes are converted to strings
-            true
-        ],
-        "somedict": {
-            "key": "value",
-            "key2": false
-        }
+        "name": "LED",
+        "status": "on"
     }
 }
 ```
 
-An error response has the following format:
+An error response looks like this:
 
 ```json
 {
     "error": "message"
 }
+
+// --- example (404) ---
+
+{
+    "error": "Route is not defined"
+}
 ```
 
-### HTTP Status Codes
-
-A small set of status codes is utilized by default:
+In addition, a small set of http status codes is used to indicate the result of the request.
 
 | Code                     | Description          |
 | ------------------------ | -------------------- |
@@ -107,3 +105,25 @@ A small set of status codes is utilized by default:
 | 404 &nbsp;  Not Found    | Route is not found   |
 | 500 &nbsp;  Server Error | Something went wrong |
 
+## Multiple servers
+
+If you, for some reason, need to run multiple servers on the same microcontroller, you can do so by creating multiple instances of `MicroServer` with different ports and starting them in separate threads.
+
+```python
+import _thread
+
+server_two = MicroServer(port=8081)
+_thread.start_new_thread(server_two.start, ())
+```
+
+## Scope of this project
+
+This server is designed to be as simple and lightweight as possible.  
+It is not intended to be a full-fledged REST API server.  
+
+For a more feature-rich server, consider using [MicroPyServer](https://github.com/troublegum/micropyserver)
+
+## A note on security
+
+This server is not designed to be secure and should not be exposed to the internet.  
+It is intended to be used in a local network or in a controlled environment.
