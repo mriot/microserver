@@ -9,7 +9,7 @@ class MicroServer:
         500: "Internal Server Error",
     }
 
-    def __init__(self, name, port=8080):
+    def __init__(self, name="", port=8080):
         self.name = name
         self.connection = None
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
