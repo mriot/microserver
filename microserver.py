@@ -57,7 +57,7 @@ class MicroServer:
 
             except Exception as e:
                 print(f"Error: {e}")
-                self._send(e, 500)
+                self._send(str(e), 500)
 
             finally:
                 self.connection.close()
