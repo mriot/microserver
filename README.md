@@ -15,12 +15,11 @@ from microserver import MicroServer
 
 server = MicroServer("Server Name")  # Default port is 8080
 ```
-### Add routes to the server
+### Add routes
 
 ```python
-server.add_route("/hello", lambda: "Hello World!")  # => {"message": "Hello World!"}
-server.add_route("/dict", lambda: {"hello": "world"})  # => {"hello": "world"}
-server.add_route("/bytes", lambda: b"Hello World!")  # => {"message": "b'Hello World!'"}
+server.add_route("/hello", lambda: "Hello World!")
+server.add_route("/list", lambda: [1, 2, 3])
 ```
 
 ### Start the server
@@ -33,28 +32,13 @@ server.start()
 Or non-blocking in a new thread
 
 ```python
-# micropython
 import _thread
 _thread.start_new_thread(server.start, ())
 ```
 
-## Requests
+### By default the home route `/` returns information about the server
 
-By default the server does not actively do anything with the requests.  
-It just calls the function associated with the route and returns the response.
-
-
-## Responses
-
-All responses are in JSON.
-
-Currently `dict`, `list` and `tuple` will be directly converted to JSON before being sent.
-
-All other types are converted to a dictionary with the key `message` and the value will be converted to a string.
-
-### The home route `/` returns information about the server
-
-`GET http://ADDRESS:PORT`
+`GET http://ADDRESS:PORT/`
 
 ```json
 {
@@ -62,12 +46,66 @@ All other types are converted to a dictionary with the key `message` and the val
     "routes": [
         "/",
         "/hello"
-        "/dict",
+        "/list",
 
     ]
 }
 ```
+> The home route can be overridden by adding a route with the path `/`.
 
-## TODO
 
-- Custom JSON converter (for types like `bytes`, etc)
+## Requests
+
+By default the server does not actively do anything with the requests.  
+It just calls the function associated with the route and returns the response.
+
+In most cases a simple `GET` request is enough to trigger a certain action on the microcontroller.
+
+
+## Responses
+
+All responses are in JSON.
+
+All non-serializable types are converted to strings.
+
+A successful response looks like this:
+
+```json
+{
+    "data": "Any response data here"
+}
+
+// --- or more complex data ---
+
+{
+    "data": {
+        "somekey": [
+            "b'testvalue'", // bytes are converted to strings
+            true
+        ],
+        "somedict": {
+            "key": "value",
+            "key2": false
+        }
+    }
+}
+```
+
+An error response has the following format:
+
+```json
+{
+    "error": "message"
+}
+```
+
+### HTTP Status Codes
+
+A small set of status codes is utilized by default:
+
+| Code                     | Description          |
+| ------------------------ | -------------------- |
+| 200 &nbsp;  OK           | Successful request   |
+| 404 &nbsp;  Not Found    | Route is not found   |
+| 500 &nbsp;  Server Error | Something went wrong |
+
