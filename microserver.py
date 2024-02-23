@@ -31,6 +31,7 @@ class MicroServer:
             {"data" if status == 200 else "error": data},
             default=lambda obj: str(obj),
         )
+        content = json.dumps({"data" if status == 200 else "error": data})
         connection.send(
             f"HTTP/1.1 {status} {self.HTTP_STATUS[status]}\r\nContent-Type: application/json\r\n\r\n{content}".encode()
         )
