@@ -46,6 +46,9 @@ class MicroServer:
                 data = self.connection.recv(1024)
                 lines = data.decode().split("\r\n")
                 method, route, _ = lines[0].split(" ")
+                print(
+                    f"{method} {route} on :{self._sock.getsockname()[1]} from {client_address[0]}"
+                )
 
                 if route in self._routes:
                     self._send(self._routes[route]())
