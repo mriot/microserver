@@ -3,6 +3,10 @@
 A minimalistic, dependency-free Python REST API server designed for microcontrollers running MicroPython.  
 It offers a simple way to communicate with your microcontrollers over a network.
 
+Developed and tested on an ESP32-C3 running MicroPython v1.22.
+
+In [demo.py](/demo.py) you can find some examples.
+
 ## Basics
 
 ### Load the code onto your microcontroller
@@ -14,13 +18,16 @@ The [microserver.py](/microserver.py) file is the only file you need to run the 
 ```python	
 from microserver import MicroServer
 
-server = MicroServer("LED")  # Default port is 8080
+ms = MicroServer("LED")  # Default port is 8080
 ```
 ### Add routes
 
 ```python
-server.add_route("/on", lambda: led.on())
-server.add_route("/off", lambda: led.off())
+ms.add_route("/on", lambda: led.on())
+ms.add_route("/off", lambda: led.off(), True)  # True = nowait
+
+# Using 'nowait' will return 'null' immediately and 
+# execute the function in the background using the _thread module
 ```
 
 ### Start the server
@@ -28,13 +35,13 @@ server.add_route("/off", lambda: led.off())
 Blocking
 
 ```python
-server.start()
+ms.start()
 ```
 Or non-blocking
 
 ```python
 import _thread
-_thread.start_new_thread(server.start, ())
+_thread.start_new_thread(ms.start, ())
 ```
 
 ### By default the home route `/` returns information about the server
@@ -51,7 +58,7 @@ _thread.start_new_thread(server.start, ())
     ]
 }
 ```
-> The home route can be overridden by adding a route with the path `/`.
+> The home route can be overridden by adding a custom route with the path `/`.
 
 
 ## Requests
@@ -73,7 +80,7 @@ A successful response has the following format:
     "data": "Any response data here"
 }
 
-// --- example ---
+// an example:
 
 {
     "data": {
@@ -90,7 +97,7 @@ An error response looks like this:
     "error": "message"
 }
 
-// --- example (404) ---
+// e.g. 404 error
 
 {
     "error": "Route is not defined"
@@ -121,7 +128,7 @@ _thread.start_new_thread(server_two.start, ())
 This server is designed to be as simple and lightweight as possible.  
 It is not intended to be a full-fledged REST API server.  
 
-For a more feature-rich server, consider using [MicroPyServer](https://github.com/troublegum/micropyserver)
+For a more feature-rich server, consider using [MicroPyServer](https://github.com/troublegum/micropyserver).
 
 ## A note on security
 
