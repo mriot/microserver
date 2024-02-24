@@ -1,5 +1,6 @@
 import json
 import socket
+import _thread
 
 
 class MicroServer:
@@ -21,8 +22,11 @@ class MicroServer:
             "/": lambda: {"name": self.name, "routes": sorted(self._routes.keys())}
         }
 
-    def add_route(self, path, callback):
-        self._routes[path] = callback
+    def add_route(self, path, callback, nowait=False):
+        if nowait:
+            self._routes[path] = lambda: (_thread.start_new_thread(callback, ()), None)[1]  # type: ignore
+        else:
+            self._routes[path] = callback
 
     def _send(self, data, code=200):
         if self.connection is not None:
