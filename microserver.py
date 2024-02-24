@@ -18,7 +18,7 @@ class MicroServer:
         self._sock.bind(("", port))
         self._sock.listen(1)
         self._routes = {
-            "/": lambda: {"name": self.name, "routes": list(self._routes.keys())}
+            "/": lambda: {"name": self.name, "routes": sorted(self._routes.keys())}
         }
 
     def add_route(self, path, callback):
